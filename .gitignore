@@ -1,0 +1,27 @@
+# Python cache
+__pycache__/
+*.pyc
+
+
+# Datasets
+dataset/
+dataset_processed/
+dataset_processed_mid/
+dataset_processed_mini/
+csl
+meta/
+
+# Training outputs / checkpoints
+checkpoints/
+checkpoints_full/
+checkpoints_mid/
+checkpoints_mini/
+checkpoints_mini_v2/
+*.pth
+*.pt
+*.ckpt
+*.h5
+
+# Logs
+logs/
+runs/
