@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from collections import deque
 from pathlib import Path
 from typing import Dict, Optional
@@ -15,6 +16,11 @@ try:
     from PIL import Image, ImageDraw, ImageFont
 except ImportError as exc:
     raise SystemExit("Missing dependencies for realtime_demo.py. Run: pip install -r requirements.txt") from exc
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+SRC_DIR = PROJECT_ROOT / "src"
+if SRC_DIR.exists() and str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
 
 from slr_baseline.features import build_sequence_features
 from slr_baseline.keypoints import draw_keypoints, extract_frame_keypoints

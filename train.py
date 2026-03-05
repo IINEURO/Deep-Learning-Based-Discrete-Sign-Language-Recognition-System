@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
+"""
+软件名称：基于深度学习的离散手语识别系统
+Software Name: Deep Learning Based Discrete Sign Language Recognition System
+版本号：V1.0
+"""
+
 from __future__ import annotations
 
 import argparse
 import json
+import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import Dict
@@ -14,6 +21,11 @@ try:
     from tqdm import tqdm
 except ImportError as exc:
     raise SystemExit("Missing dependencies for train.py. Run: pip install -r requirements.txt") from exc
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+SRC_DIR = PROJECT_ROOT / "src"
+if SRC_DIR.exists() and str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
 
 from slr_baseline.data import KeypointNPZDataset, load_manifest
 from slr_baseline.model import SignBiLSTMBaseline
@@ -235,6 +247,20 @@ def main() -> None:
     ckpt_path = ckpt_dir / "best.pt"
 
     best_val_top1 = -1.0
+    if ckpt_path.exists():
+        try:
+            old_ckpt = torch.load(ckpt_path, map_location="cpu")
+            old_best = float(old_ckpt.get("best_val_top1", -1.0))
+            best_val_top1 = old_best
+            print(
+                f"[train] found existing best checkpoint: {ckpt_path.resolve()} "
+                f"(historical_best_val_top1={best_val_top1:.4f})"
+            )
+        except Exception as exc:
+            print(
+                f"[train] warning: failed to read existing checkpoint {ckpt_path.resolve()}: {exc}. "
+                "Will treat this run as fresh best-tracking."
+            )
 
     print(
         f"[train] train={len(train_ds)} val={len(val_ds)} test={len(test_ds)} "

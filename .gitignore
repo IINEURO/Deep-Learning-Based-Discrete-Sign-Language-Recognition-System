@@ -1,27 +1,73 @@
-# Python cache
+# =========================
+# Python
+# =========================
 __pycache__/
-*.pyc
+**/__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
+# Virtual environments
+.venv/
+venv/
+env/
 
-# Datasets
-dataset/
-dataset_processed/
-dataset_processed_mid/
-dataset_processed_mini/
-csl
-meta/
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# Training outputs / checkpoints
-checkpoints/
-checkpoints_full/
-checkpoints_mid/
-checkpoints_mini/
-checkpoints_mini_v2/
-*.pth
-*.pt
-*.ckpt
-*.h5
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
+*.Zone.Identifier
 
-# Logs
+# =========================
+# Secrets / local config
+# =========================
+.env
+.env.*
+*.pem
+*.key
+
+# =========================
+# Logs / runtime
+# =========================
 logs/
 runs/
+*.log
+
+# =========================
+# Project generated artifacts
+# =========================
+# raw/linked dataset
+dataset/
+csl/
+csl
+
+# generated metadata / features
+meta/
+dataset_processed/
+
+# training outputs
+checkpoints/
+outputs/
+experiments/
+
+# large model files
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.onnx
+
+# temporary notebooks/checks
+.ipynb_checkpoints/

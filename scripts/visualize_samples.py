@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 try:
@@ -9,6 +10,12 @@ try:
     import numpy as np
 except ImportError as exc:
     raise SystemExit("Missing dependencies for visualize_samples.py. Run: pip install -r requirements.txt") from exc
+
+THIS_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = THIS_DIR if (THIS_DIR / "src").exists() else THIS_DIR.parent
+SRC_DIR = PROJECT_ROOT / "src"
+if SRC_DIR.exists() and str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
 
 from slr_baseline.data import load_manifest
 from slr_baseline.keypoints import draw_keypoints, load_frames_from_source
@@ -21,7 +28,7 @@ def main() -> None:
     )
     parser.add_argument("--manifest", type=str, default="meta/manifest.csv")
     parser.add_argument("--processed-root", type=str, default="dataset_processed")
-    parser.add_argument("--output-dir", type=str, default="debug_vis")
+    parser.add_argument("--output-dir", type=str, default="outputs/debug_vis")
     parser.add_argument("--num-samples", type=int, default=20)
     parser.add_argument("--seed", type=int, default=3407)
     parser.add_argument("--fps", type=int, default=12)
@@ -62,7 +69,7 @@ def main() -> None:
         npz_path = to_npz_path_for_row(args.processed_root, row.video_path, row.split)
         if not npz_path.exists():
             raise FileNotFoundError(
-                f"Missing keypoint npz: {npz_path}. Run extract_keypoints.py first."
+                f"Missing keypoint npz: {npz_path}. Run scripts/extract_keypoints.py first."
             )
 
         npz = np.load(npz_path)

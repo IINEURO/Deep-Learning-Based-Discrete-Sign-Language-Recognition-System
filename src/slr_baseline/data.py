@@ -83,7 +83,7 @@ class KeypointNPZDataset(Dataset):
         if strict and missing_paths:
             preview = "\n".join(str(p) for p in missing_paths[:5])
             raise FileNotFoundError(
-                "Missing processed npz files. Run extract_keypoints.py first. "
+                "Missing processed npz files. Run scripts/extract_keypoints.py first. "
                 f"Examples:\n{preview}"
             )
 

@@ -4,9 +4,16 @@ from __future__ import annotations
 import argparse
 import csv
 import random
+import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List
+
+THIS_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = THIS_DIR if (THIS_DIR / "src").exists() else THIS_DIR.parent
+SRC_DIR = PROJECT_ROOT / "src"
+if SRC_DIR.exists() and str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
 
 from slr_baseline.utils import (
     dump_json,

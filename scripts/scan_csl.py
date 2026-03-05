@@ -3,8 +3,15 @@ from __future__ import annotations
 
 import argparse
 import os
+import sys
 from pathlib import Path
 from typing import List
+
+THIS_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = THIS_DIR if (THIS_DIR / "src").exists() else THIS_DIR.parent
+SRC_DIR = PROJECT_ROOT / "src"
+if SRC_DIR.exists() and str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
 
 from slr_baseline.utils import discover_label_dirs, iter_sample_dirs, list_frames_from_dir, resolve_csl_root
 
@@ -34,9 +41,9 @@ def find_meta_files(csl_root: Path) -> tuple[List[Path], List[Path]]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Scan CSL dataset and generate report.md")
+    parser = argparse.ArgumentParser(description="Scan CSL dataset and generate docs/report.md")
     parser.add_argument("--csl-root", type=str, default="./csl", help="Path to CSL root")
-    parser.add_argument("--report-path", type=str, default="report.md", help="Output markdown path")
+    parser.add_argument("--report-path", type=str, default="docs/report.md", help="Output markdown path")
     parser.add_argument("--preview", type=int, default=10, help="Number of sample rows to show")
     args = parser.parse_args()
 

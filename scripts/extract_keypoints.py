@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import multiprocessing as mproc
+import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import List, Tuple
@@ -14,6 +15,12 @@ try:
     from tqdm import tqdm
 except ImportError as exc:
     raise SystemExit("Missing dependencies for extract_keypoints.py. Run: pip install -r requirements.txt") from exc
+
+THIS_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = THIS_DIR if (THIS_DIR / "src").exists() else THIS_DIR.parent
+SRC_DIR = PROJECT_ROOT / "src"
+if SRC_DIR.exists() and str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
 
 from slr_baseline.data import load_manifest
 from slr_baseline.keypoints import extract_frame_keypoints, load_frames_from_source

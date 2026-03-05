@@ -1,90 +1,81 @@
-# CSL Hands+Pose Baseline (PyTorch)
+# Deep Learning Based Discrete Sign Language Recognition System V1.0
 
-目标：把 CSL 数据集做成可训练的 Hands + Pose（上半身）分类 baseline，并提供可复现命令。
+基于 **PyTorch + MediaPipe + Gradio** 的离散手语识别基线工程，支持：
 
-## 目录结构
+- 图片识别
+- 视频按时间间隔切片识别（输出时间段结果表）
+- 实时摄像头识别（持续输出字符与时间片段）
 
-- `scan_csl.py`: 扫描 `./csl`，输出 `report.md`
-- `prepare_meta.py`: 生成 `meta/vocab_gloss.json` 与 `meta/manifest.csv`
-- `extract_keypoints.py`: MediaPipe 提取关键点，输出 `dataset_processed/{split}/*.npz`
-- `visualize_samples.py`: 随机抽样可视化，输出 `debug_vis/*.mp4`
-- `train.py`: 训练 baseline（Linear -> BiLSTM -> Pool -> Linear）
-- `realtime_demo.py`: 摄像头 1 秒滑窗推理 demo
-- `slr_baseline/`: 公共模块（模型、数据读取、关键点工具）
+## 1. 项目特点
 
-## 数据准备
+- `src` 结构化代码组织（`src/slr_baseline`）
+- 训练、离线推理、实时演示、可视化脚本分离
+- 支持 `Hands + Pose` 关键点（55点，4维）
+- Gradio 可视化界面，适合演示与软件著作权材料准备
 
-默认会读取 `./csl`。本项目中已创建软链接：`csl -> dataset/csl`。
+## 2. 目录结构
 
-请确认以下路径存在：
+```text
+Sign-Language-Trans/
+├── gradio_app.py
+├── train.py
+├── infer.py
+├── realtime_demo.py
+├── scripts/
+│   ├── scan_csl.py
+│   ├── prepare_meta.py
+│   ├── extract_keypoints.py
+│   └── visualize_samples.py
+├── src/slr_baseline/
+├── docs/
+├── assets/
+├── requirements.txt
+└── pyproject.toml
+```
 
-- `csl/dictionary.txt`
-- `csl/color_video_25000/`
+详细结构说明见：`docs/PROJECT_STRUCTURE.md`。
 
-## 安装依赖
+## 3. 环境要求
+
+- Linux（推荐 Ubuntu 22.04）
+- Python 3.10
+- 依赖见 `requirements.txt`
+
+安装：
 
 ```bash
 pip install -r requirements.txt
 ```
 
-说明：当前基线依赖 `mediapipe==0.10.14`（使用 `solutions` API）。
-
-## 1) 扫描数据并产出报告
+可选开发安装：
 
 ```bash
-python scan_csl.py --csl-root ./csl --report-path report.md
+pip install -e .
 ```
 
-输出：
+## 4. 快速开始
 
-- `report.md`（含样例行、标注文件、划分文件检查结果）
-
-## 2) 生成词表与清单（可复现 split）
+### 4.1 启动 UI
 
 ```bash
-python prepare_meta.py --csl-root ./csl --meta-dir meta --seed 3407
+python gradio_app.py
 ```
 
-输出：
+默认地址：`http://127.0.0.1:7860`
 
-- `meta/vocab_gloss.json`
-- `meta/manifest.csv`（列：`video_path,label_id,split`）
-
-说明：如无官方 split，脚本按分层随机 `8:1:1` 生成 `train/val/test`，固定 `seed` 可复现。
-
-## 3) 提取 Hands+Pose 关键点
+### 4.2 数据准备（若需训练）
 
 ```bash
-python extract_keypoints.py \
+python scripts/scan_csl.py --csl-root ./csl --report-path docs/report.md
+python scripts/prepare_meta.py --csl-root ./csl --meta-dir meta --seed 3407
+python scripts/extract_keypoints.py \
   --manifest meta/manifest.csv \
   --processed-root dataset_processed \
   --num-frames 32 \
-  --seed 3407 \
   --num-workers 4
 ```
 
-输出 shape：`[T=32, 55, 4]`
-
-- 55 点 = Hands 42 点（左21 + 右21） + Pose 上半身 13 点
-- 每点 4 维 = `[x, y, z, vis]`
-- 缺失点补 0
-- 支持多进程提取：`--num-workers N`
-- 支持分片：`--num-shards K --shard-id I`（用于多机/多任务并行）
-
-## 4) 可视化抽样检查（20个）
-
-```bash
-python visualize_samples.py \
-  --manifest meta/manifest.csv \
-  --processed-root dataset_processed \
-  --output-dir debug_vis \
-  --num-samples 20 \
-  --seed 3407
-```
-
-输出：`debug_vis/*.mp4`
-
-## 5) 训练 baseline
+### 4.3 训练
 
 ```bash
 python train.py \
@@ -96,33 +87,34 @@ python train.py \
   --lr 1e-3 \
   --scheduler cosine \
   --min-lr 1e-5 \
-  --seed 3407 \
   --ckpt-dir checkpoints
 ```
 
-训练输出：
+说明：`checkpoints/best.pt` 按 **历史最佳 val top1** 维护（同一 `--ckpt-dir` 下跨次训练比较）。
 
-- `top1 / top5`
-- 最优 checkpoint：`checkpoints/best.pt`
-- 默认启用：关键点归一化 + 速度特征（可用 `--no-normalize` / `--no-velocity` 关闭）
-
-## 6) 实时 demo
+### 4.4 离线推理
 
 ```bash
-python realtime_demo.py \
+python infer.py \
+  --input <视频文件或帧目录> \
   --checkpoint checkpoints/best.pt \
   --vocab meta/vocab_gloss.json \
-  --camera-id 0 \
-  --window-seconds 1.0
+  --topk 5
 ```
 
-操作：按 `q` 退出。
+## 5. 开源说明
 
-## 常见错误与排查
+- 本仓库默认不包含数据集、训练产物和大模型权重。
+- 请根据你的数据集许可协议下载和使用数据。
+- 如果你发布权重，请在 Release 或外部链接中提供下载地址。
 
-- `CSL root not found`：检查 `--csl-root` 是否正确，或确认软链接 `./csl` 存在。
-- `Missing processed npz files`：先运行 `extract_keypoints.py`。
-- `Failed to open camera`：检查摄像头权限或改 `--camera-id`。
-- 中文词条显示异常：系统缺少 CJK 字体，仍可通过 label id 推理。
-- `Cannot access MediaPipe Hands/Pose APIs`：执行
-  `pip uninstall -y mediapipe mediapipe-nightly && pip install mediapipe==0.10.14`。
+## 6. 常见问题
+
+- `ModuleNotFoundError`：执行 `pip install -r requirements.txt`
+- MediaPipe API 报错：建议固定 `mediapipe==0.10.14`
+- 摄像头无画面：检查浏览器摄像头权限
+
+## 7. License
+
+本项目采用 [MIT License](LICENSE)。
+
