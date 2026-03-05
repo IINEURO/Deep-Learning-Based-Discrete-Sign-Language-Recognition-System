@@ -1,4 +1,4 @@
-# Deep Learning Based Discrete Sign Language Recognition System V1.0
+# Deep Learning Based Discrete Sign Language Recognition System V1.0(基于深度学习的离散手语识别系统）
 
 基于 **PyTorch + MediaPipe + Gradio** 的离散手语识别基线工程，支持：
 
