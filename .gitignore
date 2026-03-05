@@ -72,8 +72,8 @@ experiments/
 # temporary notebooks/checks
 .ipynb_checkpoints/
 
-# UI assets (keep local, do not version)
-assets/
-
 # Office docs
 *.docx
+
+# Local docs (keep local, do not version)
+docs/
